@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Opera Hall — نظام إدارة قاعات الأفراح</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cinzel:wght@600;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#D4A843;--gold2:#F0C855;--gold3:#FBE17A;--gold4:#A07828;
+  --bg:#0F0E0A;--bg2:#1A1810;--bg3:#252318;--bg4:#2F2C1E;
+  --text:#F5EDD4;--text2:#D4C89A;--text3:#A09468;--text4:#6A6040;
+  --border:#3A3520;--border2:#4A4528;
+  --r:10px;
+}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);font-size:15px;min-height:100vh;direction:rtl}
+input,select,textarea,button,label{font-family:'Tajawal',sans-serif}
+
+/* LOGIN */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#2A2200 0%,#0A0900 60%)}
+.login-card{width:420px;background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:46px 42px;box-shadow:0 0 80px rgba(212,168,67,0.12),0 24px 60px rgba(0,0,0,0.7)}
+@media(max-width:480px){.login-card{width:95vw;padding:36px 24px;border-radius:14px}}
+.login-head{text-align:center;margin-bottom:28px}
+.login-head h1{font-family:'Cinzel',serif;font-size:27px;font-weight:900;color:var(--gold3);letter-spacing:5px;margin:14px 0 5px}
+.login-head p{font-size:13px;color:var(--text3);letter-spacing:1px}
+.halls-strip{display:flex;gap:10px;margin-bottom:22px}
+.hstrip{flex:1;padding:9px 6px;text-align:center;background:rgba(212,168,67,0.06);border:1px solid rgba(212,168,67,0.2);border-radius:8px;font-size:13px;font-weight:700;color:var(--gold2)}
+.role-tabs{display:flex;margin-bottom:20px;border:1px solid var(--border2);border-radius:9px;overflow:hidden}
+.rtab{flex:1;padding:9px;text-align:center;background:transparent;border:none;border-left:1px solid var(--border2);font-size:13px;font-weight:700;color:var(--text3);cursor:pointer;transition:all .2s}
+.rtab:last-child{border-left:none}
+.rtab.on{background:rgba(212,168,67,0.12);color:var(--gold2)}
+.fld{margin-bottom:14px}
+.fld label{display:block;font-size:12px;font-weight:700;color:var(--text3);margin-bottom:6px}
+.fld input,.fld select,.fld textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border2);border-radius:9px;font-size:14px;background:var(--bg3);color:var(--text);outline:none;transition:border .2s}
+.fld input:focus,.fld select:focus{border-color:var(--gold)}
+.fld select option{background:var(--bg3)}
+.fld textarea{resize:vertical;min-height:68px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 20px;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s}
+.btn-g{background:linear-gradient(135deg,#A07828,#F0C855,#A07828);color:#1A1200}
+.btn-g:hover{filter:brightness(1.12)}
+.btn-g:disabled{opacity:.45;cursor:not-allowed}
+.btn-full{width:100%;padding:13px;font-size:15px}
+.btn-line{background:transparent;border:1.5px solid var(--border2);color:var(--text3)}
+.btn-line:hover{border-color:var(--gold);color:var(--gold2)}
+.btn-del{background:rgba(231,76,60,0.13);color:#ff9090;border:1px solid rgba(231,76,60,0.22)}
+.btn-del:hover{background:rgba(231,76,60,0.28)}
+.btn-add{background:rgba(46,204,113,0.1);color:#4EE090;border:1px solid rgba(46,204,113,0.2)}
+.btn-sm{padding:6px 14px;font-size:12px;border-radius:7px}
+.btn-xs{padding:4px 10px;font-size:11px;border-radius:6px}
+
+/* APP SHELL */
+#main-app{display:none;min-height:100vh;flex-direction:column}
+.topbar{height:62px;background:var(--bg2);border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,0.5)}
+.tb-brand{display:flex;align-items:center;gap:12px}
+.tb-en{font-family:'Cinzel',serif;font-size:17px;font-weight:900;color:var(--gold3);letter-spacing:3px;line-height:1.1}
+.tb-ar{font-size:11px;color:var(--text3);margin-top:2px}
+.tb-right{display:flex;align-items:center;gap:10px}
+.ubadge{background:rgba(212,168,67,0.12);color:var(--gold2);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid rgba(212,168,67,0.22)}
+.layout{display:flex;flex:1;overflow:hidden}
+.sidebar{width:220px;background:var(--bg2);border-left:1px solid var(--border);padding:16px 0;flex-shrink:0;overflow-y:auto}
+@media(max-width:700px){.sidebar{display:none}}
+.nav-sec{font-size:10px;font-weight:800;color:var(--text4);letter-spacing:1.5px;padding:14px 20px 5px;text-transform:uppercase}
+.ni{display:flex;align-items:center;gap:10px;padding:11px 20px;font-size:14px;font-weight:500;color:var(--text3);cursor:pointer;transition:all .15s;border-right:3px solid transparent}
+.ni:hover{background:rgba(212,168,67,0.06);color:var(--text2)}
+.ni.on{background:rgba(212,168,67,0.1);color:var(--gold2);border-right-color:var(--gold);font-weight:700}
+.ni-ic{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.content{flex:1;padding:22px;overflow-y:auto;max-height:calc(100vh - 62px)}
+@media(max-width:700px){.content{padding:14px}}
+.pg{display:none}.pg.on{display:block}
+.pg-title{font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:var(--gold3);margin-bottom:4px;letter-spacing:1px}
+.pg-sub{font-size:13px;color:var(--text3);margin-bottom:20px}
+
+/* MOBILE NAV */
+.mobile-nav{display:none;background:var(--bg2);border-top:1px solid var(--border2);position:fixed;bottom:0;left:0;right:0;z-index:99;padding:6px 0 env(safe-area-inset-bottom)}
+@media(max-width:700px){.mobile-nav{display:flex}}
+.mn-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:6px 4px;cursor:pointer;color:var(--text4);font-size:10px;font-weight:700;transition:color .15s;gap:3px}
+.mn-item.on{color:var(--gold2)}
+.mn-item .mn-ic{font-size:20px}
+@media(max-width:700px){.content{padding-bottom:70px}}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.sc{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:16px 14px;position:relative;overflow:hidden}
+.sc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.sc .lb{font-size:10px;font-weight:800;color:var(--text4);margin-bottom:8px;letter-spacing:.6px;text-transform:uppercase}
+.sc .vl{font-size:22px;font-weight:900;color:var(--text);font-family:'Cinzel',serif}
+.sc .sb{font-size:11px;color:var(--text4);margin-top:4px}
+.sc-g .vl{color:var(--gold2)}.sc-gr .vl{color:#4EE090}.sc-bl .vl{color:#6AB8F0}
+
+/* CARD */
+.card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:18px;margin-bottom:16px}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ct{font-size:15px;font-weight:700;color:var(--text);letter-spacing:.3px}
+
+/* HALL CARDS */
+.halls-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+@media(max-width:600px){.halls-row{grid-template-columns:1fr}}
+.hc{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:18px;position:relative;overflow:hidden}
+.hc.royal{border-color:rgba(212,168,67,0.3)}
+.hc.royal::before{content:'';position:absolute;inset:0;border-radius:var(--r);background:linear-gradient(135deg,rgba(212,168,67,0.05) 0%,transparent 60%);pointer-events:none}
+.hc.princess{border-color:rgba(200,160,210,0.3)}
+.hc.princess::before{content:'';position:absolute;inset:0;border-radius:var(--r);background:linear-gradient(135deg,rgba(200,160,210,0.05) 0%,transparent 60%);pointer-events:none}
+.hc h3{font-family:'Cinzel',serif;font-size:16px;font-weight:700;color:var(--gold3);margin-bottom:4px}
+.hc .cap{font-size:12px;color:var(--text3);margin-bottom:12px}
+.hs-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.hs-row:last-child{border:none;padding-bottom:0}
+.hs-lbl{color:var(--text3);font-weight:500}
+.hs-val{font-weight:700;color:var(--gold2);font-size:13px}
+
+/* TABLE - scrollable on mobile */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;min-width:600px}
+thead tr{border-bottom:2px solid var(--border2)}
+th{font-size:10px;font-weight:800;color:var(--text3);padding:10px 10px;text-align:right;white-space:nowrap;letter-spacing:.6px;text-transform:uppercase}
+tbody tr{border-bottom:1px solid var(--border);transition:background .12s}
+tbody tr:last-child{border:none}
+tbody tr:hover{background:rgba(212,168,67,0.03)}
+td{padding:10px 10px;font-size:13px;color:var(--text2);text-align:right;vertical-align:middle;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.bg-conf{background:rgba(46,204,113,0.12);color:#4EE090;border:1px solid rgba(46,204,113,0.2)}
+.bg-pend{background:rgba(212,168,67,0.12);color:var(--gold2);border:1px solid rgba(212,168,67,0.2)}
+.bg-canc{background:rgba(231,76,60,0.12);color:#ff8080;border:1px solid rgba(231,76,60,0.2)}
+.tag-id{font-size:11px;background:var(--bg3);color:var(--text3);padding:3px 8px;border-radius:5px;font-weight:700;border:1px solid var(--border2);font-family:'Cinzel',serif}
+.slot-badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;background:rgba(52,152,219,0.1);color:#6AB8F0;border:1px solid rgba(52,152,219,0.2)}
+
+/* CALENDAR */
+.cal-wrapper{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:14px}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cal-nav{display:flex;align-items:center;gap:8px}
+.cal-nav button{width:32px;height:32px;border:1px solid var(--border2);border-radius:7px;background:var(--bg2);color:var(--text2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.cal-nav button:hover{border-color:var(--gold);color:var(--gold2)}
+.cal-month{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold3);letter-spacing:.5px}
+.cal-year-sel{padding:4px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--bg2);color:var(--text2);font-size:13px;cursor:pointer;outline:none}
+.cal-year-sel option{background:var(--bg2)}
+.cal-days-head{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px}
+.cal-days-head span{text-align:center;font-size:10px;font-weight:800;color:var(--text4);padding:4px 0;text-transform:uppercase}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-day{min-height:48px;border-radius:8px;border:1px solid transparent;background:transparent;cursor:pointer;transition:all .18s;position:relative;display:flex;flex-direction:column;align-items:center;padding:4px 2px 3px;user-select:none}
+@media(max-width:480px){.cal-day{min-height:40px}}
+.cal-day:hover:not(.cal-empty):not(.cal-past){background:rgba(212,168,67,0.08);border-color:rgba(212,168,67,0.2)}
+.cal-day.cal-empty{cursor:default}
+.cal-day.cal-past{opacity:.3;cursor:not-allowed}
+.cal-day.cal-today{border-color:rgba(212,168,67,0.3);background:rgba(212,168,67,0.04)}
+.cal-day.cal-today .day-num{color:var(--gold2);font-weight:900}
+.cal-day.cal-selected{background:rgba(212,168,67,0.15)!important;border-color:var(--gold)!important}
+.cal-day.cal-selected .day-num{color:var(--gold3);font-weight:900}
+.cal-day.cal-full-day{background:rgba(231,76,60,0.04);border-color:rgba(231,76,60,0.15)}
+.day-num{font-size:13px;font-weight:600;color:var(--text2);line-height:1;margin-bottom:3px}
+.day-dots{display:flex;gap:2px;justify-content:center;flex-wrap:wrap;min-height:8px}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.dot-h1{background:var(--gold)}
+.dot-h2{background:#C8A0E0}
+.cal-selected-display{margin-top:10px;padding:9px 12px;background:rgba(212,168,67,0.07);border:1px solid rgba(212,168,67,0.2);border-radius:8px;font-size:13px;font-weight:700;color:var(--gold2);text-align:center;min-height:34px;display:flex;align-items:center;justify-content:center;gap:8px}
+.cal-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;padding:8px 10px;background:rgba(0,0,0,0.2);border-radius:8px}
+.cal-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
+
+/* CONFLICT ALERT */
+.conflict-box{background:rgba(231,76,60,0.07);border:1.5px solid rgba(231,76,60,0.3);border-radius:10px;padding:12px 14px;margin-bottom:12px;display:none}
+.cb-title{font-size:13px;font-weight:800;color:#ff8080;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.cb-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(231,76,60,0.12);font-size:13px;color:var(--text2)}
+.cb-item:last-child{border:none}
+.avail-box{background:rgba(46,204,113,0.05);border:1px solid rgba(46,204,113,0.18);border-radius:8px;padding:10px 12px;margin-top:8px}
+.av-title{font-size:11px;font-weight:800;color:#4EE090;text-transform:uppercase;letter-spacing:.7px;margin-bottom:7px}
+.avail-slot{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;background:rgba(46,204,113,0.1);color:#4EE090;border:1px solid rgba(46,204,113,0.2);margin:3px}
+
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:200;display:none;align-items:flex-start;justify-content:center;backdrop-filter:blur(3px);padding:10px 0;overflow-y:auto}
+.mo.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:24px 22px;width:680px;max-width:96vw;box-shadow:0 0 80px rgba(0,0,0,0.6);margin:auto}
+@media(max-width:480px){.modal{padding:16px 14px;border-radius:12px}}
+.modal-title{font-family:'Cinzel',serif;font-size:16px;font-weight:700;color:var(--gold3);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border2);letter-spacing:1px}
+.mf{display:flex;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+
+/* FORM SECTIONS */
+.form-sec{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:14px 16px;margin-bottom:10px}
+.form-sec-title{font-size:11px;font-weight:800;color:var(--gold2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.fg2{grid-template-columns:1fr}}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:480px){.fg3{grid-template-columns:1fr}}
+.fg2 .full,.fg3 .full{grid-column:1/-1}
+.fld-s{margin-bottom:0}
+.fld-s label{display:block;font-size:11px;font-weight:700;color:var(--text3);margin-bottom:5px}
+.fld-s input,.fld-s select,.fld-s textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;background:var(--bg2);color:var(--text);outline:none;transition:border .2s}
+.fld-s input:focus,.fld-s select:focus{border-color:var(--gold)}
+.fld-s select option{background:var(--bg2)}
+.fld-s textarea{resize:vertical;min-height:56px}
+
+/* SLOT CARDS */
+.slot-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.slot-card{padding:12px 12px;background:var(--bg2);border:2px solid var(--border2);border-radius:9px;cursor:pointer;transition:all .2s;position:relative;user-select:none}
+.slot-card:hover:not(.taken){border-color:rgba(212,168,67,0.4)}
+.slot-card.selected{border-color:var(--gold);background:rgba(212,168,67,0.06)}
+.slot-card.taken{border-color:rgba(231,76,60,0.35);background:rgba(231,76,60,0.04);cursor:not-allowed;opacity:.65}
+.slot-card input[type=radio]{position:absolute;opacity:0;width:0;height:0}
+.sc-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
+.sc-time{font-size:11px;color:var(--text3);margin-bottom:5px}
+.sc-price{font-size:15px;font-weight:900;color:var(--gold2);font-family:'Cinzel',serif}
+.sc-taken{font-size:11px;color:#ff8080;font-weight:700;margin-top:4px}
+
+/* INCLUDES */
+.includes-box{background:rgba(46,204,113,0.04);border:1px solid rgba(46,204,113,0.15);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.ib-title{font-size:11px;font-weight:800;color:#4EE090;text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
+.includes-list{display:flex;flex-wrap:wrap;gap:6px}
+.inc-item{font-size:11px;font-weight:700;padding:3px 10px;border-radius:5px;background:rgba(46,204,113,0.1);color:#4EE090;border:1px solid rgba(46,204,113,0.2)}
+
+/* DECO TOGGLE */
+.deco-toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg2);border:1.5px solid var(--border2);border-radius:9px;cursor:pointer;transition:border .2s}
+.deco-toggle.active{border-color:var(--gold);background:rgba(212,168,67,0.05)}
+.dt-left{display:flex;align-items:center;gap:9px}
+.dt-text{font-size:13px;font-weight:700;color:var(--text)}
+.dt-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.toggle-sw{width:38px;height:22px;background:var(--border2);border-radius:11px;position:relative;transition:background .2s;flex-shrink:0}
+.toggle-sw::after{content:'';position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s}
+.toggle-sw.on{background:var(--gold)}
+.toggle-sw.on::after{transform:translateX(-16px)}
+
+/* PRICE SUMMARY */
+.price-summary{background:#000;border:1px solid var(--border2);border-radius:9px;padding:14px 16px;margin-top:4px}
+.ps-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1E1C12;font-size:13px}
+.ps-row:last-child{border:none;padding-top:10px}
+.ps-lbl{color:var(--text3)}
+.ps-val{font-weight:700;color:var(--text)}
+.ps-total{font-size:18px;font-weight:900;color:var(--gold3);font-family:'Cinzel',serif}
+.ps-neg{color:#ff8080}
+
+/* EXTRA HOURS */
+.extra-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(52,152,219,0.05);border:1px solid rgba(52,152,219,0.15);border-radius:8px}
+.extra-row label{font-size:13px;color:var(--text2);font-weight:600;flex-shrink:0}
+.extra-row input{width:60px;padding:6px 8px;border:1.5px solid var(--border2);border-radius:7px;font-size:14px;background:var(--bg2);color:var(--text);text-align:center}
+.extra-row input:focus{outline:none;border-color:var(--gold)}
+.extra-cost{font-size:13px;color:#6AB8F0;font-weight:700;margin-right:auto}
+
+/* RESULT PANEL */
+.result-panel{background:#000;border:1px solid var(--border2);border-radius:var(--r);padding:20px}
+.rh{font-size:10px;color:var(--text4);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;font-weight:700}
+.rr{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1E1C12;font-size:14px}
+.rr:last-child{border:none;padding-top:12px}
+.rl{color:var(--text3);font-weight:500}
+.rv{font-weight:700;color:var(--text)}
+.rv-pos{color:#4EE090}.rv-neg{color:#ff8080}
+.rv-net{font-size:22px;color:var(--gold3);font-family:'Cinzel',serif;font-weight:900}
+
+/* ITEMS */
+.items-head{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 32px;gap:7px;margin-bottom:7px}
+.items-head span{font-size:10px;font-weight:800;color:var(--text4);text-transform:uppercase;letter-spacing:.6px}
+.item-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 32px;gap:7px;align-items:center;margin-bottom:7px}
+.item-row select,.item-row input{padding:7px 9px;border:1.5px solid var(--border2);border-radius:7px;font-size:12px;background:var(--bg2);color:var(--text);width:100%}
+.item-row select:focus,.item-row input:focus{outline:none;border-color:var(--gold)}
+.item-total{font-weight:800;color:var(--gold2);text-align:center;font-size:12px;font-family:'Cinzel',serif}
+
+/* TIMESHEET */
+.tsg{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 76px 40px;gap:7px;align-items:center;margin-bottom:7px}
+.tsg input{padding:8px 9px;border:1.5px solid var(--border2);border-radius:7px;font-size:12px;background:var(--bg3);color:var(--text);width:100%}
+.tsg input:focus{outline:none;border-color:var(--gold)}
+.tsh{font-weight:800;color:var(--gold2);text-align:center;font-size:13px;font-family:'Cinzel',serif}
+
+/* ACTIVITY */
+.ai{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.ai:last-child{border:none}
+.adot{width:6px;height:6px;border-radius:50%;background:var(--gold);margin-top:6px;flex-shrink:0}
+.atxt{font-size:13px;color:var(--text2);font-weight:500;line-height:1.5}
+.atm{font-size:11px;color:var(--text4);margin-top:2px}
+.tag-sm{font-size:11px;background:rgba(212,168,67,0.1);color:var(--gold2);padding:2px 7px;border-radius:5px;font-weight:700;border:1px solid rgba(212,168,67,0.15)}
+.divr{border:none;border-top:1px solid var(--border);margin:12px 0}
+
+/* CALCULATOR GRID */
+.calc-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:20px}
+@media(max-width:800px){.calc-grid{grid-template-columns:1fr}}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.dash-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-head">
+      <svg width="80" height="76" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="lg" x1="0%" y1="0%" x2="50%" y2="100%"><stop offset="0%" stop-color="#FBE17A"/><stop offset="45%" stop-color="#D4A843"/><stop offset="100%" stop-color="#7A5800"/></linearGradient></defs>
+        <path d="M60 7C55 20,49 39,49 59c0 14,4 22,11 26c7-4,11-12,11-26c0-20-6-39-11-52Z" fill="url(#lg)"/>
+        <path d="M35 21c-8 10-12 25-10 39c1 8,5 14,10 16c4-6,6-14,4-24c-2-10-4-21-4-31Z" fill="url(#lg)"/>
+        <path d="M85 21c0 10-2 21-4 31c-2 10,0 18,4 24c5-2,9-8,10-16c2-14-2-29-10-39Z" fill="url(#lg)"/>
+        <path d="M17 39c-6 10-7 23-4 33c2 6,6 10,10 8c-2-8-2-18,0-28c-2-4-4-9-6-13Z" fill="url(#lg)"/>
+        <path d="M103 39c-2 4-4 9-6 13c2 10,2 20,0 28c4 2,8-2,10-8c3-10,2-23-4-33Z" fill="url(#lg)"/>
+        <rect x="43" y="86" width="34" height="9" rx="3" fill="url(#lg)"/>
+      </svg>
+      <h1>OPERA HALL</h1>
+      <p>نظام إدارة قاعات الأفراح</p>
+    </div>
+    <div class="halls-strip">
+      <div class="hstrip">👑 الملكية — ₪6,000</div>
+      <div class="hstrip">🌸 الأميرية — ₪5,000</div>
+    </div>
+    <div class="role-tabs">
+      <button class="rtab on" onclick="selRole(this)">مدير</button>
+      <button class="rtab" onclick="selRole(this)">مشرف</button>
+      <button class="rtab" onclick="selRole(this)">موظف</button>
+    </div>
+    <div class="fld"><label>اسم المستخدم</label><input id="un" value="admin" placeholder="أدخل اسم المستخدم" autocomplete="username"/></div>
+    <div class="fld"><label>كلمة المرور</label><input type="password" id="up" value="1234" placeholder="كلمة المرور" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"/></div>
+    <p style="color:#ff7777;font-size:13px;margin-top:8px;display:none;text-align:center" id="lerr">اسم المستخدم أو كلمة المرور غير صحيحة</p>
+    <button class="btn btn-g btn-full" style="margin-top:10px" onclick="login()">تسجيل الدخول</button>
+    <p style="text-align:center;font-size:11px;color:var(--text4);margin-top:12px">admin/1234 · manager/5678 · staff/9999</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="main-app">
+  <div class="topbar">
+    <div class="tb-brand">
+      <svg width="30" height="28" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="tlg" x1="0%" y1="0%" x2="50%" y2="100%"><stop offset="0%" stop-color="#FBE17A"/><stop offset="45%" stop-color="#D4A843"/><stop offset="100%" stop-color="#7A5800"/></linearGradient></defs>
+        <path d="M60 7C55 20,49 39,49 59c0 14,4 22,11 26c7-4,11-12,11-26c0-20-6-39-11-52Z" fill="url(#tlg)"/>
+        <path d="M35 21c-8 10-12 25-10 39c1 8,5 14,10 16c4-6,6-14,4-24c-2-10-4-21-4-31Z" fill="url(#tlg)"/>
+        <path d="M85 21c0 10-2 21-4 31c-2 10,0 18,4 24c5-2,9-8,10-16c2-14-2-29-10-39Z" fill="url(#tlg)"/>
+        <path d="M17 39c-6 10-7 23-4 33c2 6,6 10,10 8c-2-8-2-18,0-28c-2-4-4-9-6-13Z" fill="url(#tlg)"/>
+        <path d="M103 39c-2 4-4 9-6 13c2 10,2 20,0 28c4 2,8-2,10-8c3-10,2-23-4-33Z" fill="url(#tlg)"/>
+        <rect x="43" y="86" width="34" height="9" rx="3" fill="url(#tlg)"/>
+      </svg>
+      <div><div class="tb-en">OPERA HALL</div><div class="tb-ar">نظام الإدارة</div></div>
+    </div>
+    <div class="tb-right">
+      <span id="tu" class="ubadge"></span>
+      <button class="btn btn-line btn-sm" onclick="logout()">خروج</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar">
+      <div class="nav-sec">الرئيسية</div>
+      <div class="ni on" onclick="sp('dashboard',this)"><span class="ni-ic">📊</span>لوحة التحكم</div>
+      <div class="ni" onclick="sp('halls',this)"><span class="ni-ic">🏛️</span>القاعتان</div>
+      <div class="nav-sec">الإدارة</div>
+      <div class="ni" onclick="sp('bookings',this)"><span class="ni-ic">📅</span>الحجوزات</div>
+      <div class="nav-sec">المالية</div>
+      <div class="ni" onclick="sp('calculator',this)"><span class="ni-ic">💰</span>حاسبة التكاليف</div>
+      <div class="ni" onclick="sp('timesheet',this)"><span class="ni-ic">🕐</span>سجل الدوام</div>
+      <div class="ni" onclick="sp('reports',this)"><span class="ni-ic">📈</span>التقارير</div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="pg on" id="pg-dashboard">
+        <div class="pg-title">OPERA HALL</div>
+        <div class="pg-sub" id="dg">مرحباً بك في نظام الإدارة</div>
+        <div class="stats">
+          <div class="sc sc-g"><div class="lb">إجمالي الحجوزات</div><div class="vl" id="s1">0</div><div class="sb">جميع الأوقات</div></div>
+          <div class="sc sc-gr"><div class="lb">إجمالي الإيرادات</div><div class="vl" id="s2">₪ 0</div><div class="sb">مؤكدة</div></div>
+          <div class="sc sc-bl"><div class="lb">عدد العملاء</div><div class="vl" id="s3">0</div></div>
+          <div class="sc"><div class="lb">قيد الانتظار</div><div class="vl" id="s4">0</div></div>
+        </div>
+        <div class="dash-grid">
+          <div class="card"><div class="ch"><div class="ct">آخر الحجوزات</div></div><div id="dbl"></div></div>
+          <div class="card"><div class="ch"><div class="ct">سجل النشاطات</div></div><div id="dal"></div></div>
+        </div>
+      </div>
+
+      <!-- HALLS -->
+      <div class="pg" id="pg-halls">
+        <div class="pg-title">القاعتان</div>
+        <div class="pg-sub">نظرة عامة — الملكية والأميرية</div>
+        <div class="halls-row">
+          <div class="hc royal">
+            <h3>👑 القاعة الملكية</h3>
+            <div class="cap">Royal Hall · طاقة 500 شخص</div>
+            <div class="hs-row"><span class="hs-lbl">🕕 الفترة الأولى (٦–٨ م)</span><span class="hs-val">₪ 6,000</span></div>
+            <div class="hs-row"><span class="hs-lbl">🌙 الفترة الثانية (٩–١١ م)</span><span class="hs-val">₪ 6,000</span></div>
+            <div class="hs-row"><span class="hs-lbl">ساعة إضافية</span><span class="hs-val">₪ 1,000</span></div>
+            <div class="hs-row"><span class="hs-lbl">✅ يشمل</span><span class="hs-val" style="color:#4EE090;font-size:12px">مشروبات + كيك</span></div>
+            <div class="hs-row"><span class="hs-lbl">🌸 الزينة (اختياري)</span><span class="hs-val" style="color:var(--text3)">بسعر إضافي</span></div>
+            <div class="hs-row"><span class="hs-lbl">حجوزات مؤكدة</span><span class="hs-val" id="h1c">0</span></div>
+            <div class="hs-row"><span class="hs-lbl">إجمالي الإيرادات</span><span class="hs-val" id="h1r">₪ 0</span></div>
+          </div>
+          <div class="hc princess">
+            <h3>🌸 القاعة الأميرية</h3>
+            <div class="cap">Princess Hall · طاقة 300 شخص</div>
+            <div class="hs-row"><span class="hs-lbl">🕕 الفترة الأولى (٦–٨ م)</span><span class="hs-val">₪ 5,000</span></div>
+            <div class="hs-row"><span class="hs-lbl">🌙 الفترة الثانية (٩–١١ م)</span><span class="hs-val">₪ 5,000</span></div>
+            <div class="hs-row"><span class="hs-lbl">ساعة إضافية</span><span class="hs-val">₪ 1,000</span></div>
+            <div class="hs-row"><span class="hs-lbl">✅ يشمل</span><span class="hs-val" style="color:#4EE090;font-size:12px">مشروبات + كيك + زينة</span></div>
+            <div class="hs-row"><span class="hs-lbl">حجوزات مؤكدة</span><span class="hs-val" id="h2c">0</span></div>
+            <div class="hs-row"><span class="hs-lbl">إجمالي الإيرادات</span><span class="hs-val" id="h2r">₪ 0</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ct">حجوزات القاعتين</div></div>
+          <div class="tbl-wrap"><table><thead><tr><th>العميل</th><th>الهاتف</th><th>القاعة</th><th>التاريخ</th><th>الفترة</th><th>زينة</th><th>إضافي</th><th>المبلغ ₪</th><th>الحالة</th></tr></thead>
+          <tbody id="htb"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- BOOKINGS -->
+      <div class="pg" id="pg-bookings">
+        <div class="pg-title">الحجوزات</div>
+        <div class="pg-sub">كل فترة تقبل حجزاً واحداً لكل قاعة</div>
+        <div class="card">
+          <div class="ch"><div class="ct">قائمة الحجوزات</div><button class="btn btn-g btn-sm" onclick="om()">+ حجز جديد</button></div>
+          <div class="tbl-wrap"><table><thead><tr><th>رقم</th><th>العميل</th><th>الهاتف</th><th>القاعة</th><th>التاريخ</th><th>الفترة</th><th>زينة</th><th>إضافي</th><th>المبلغ ₪</th><th>الحالة</th><th>إجراء</th></tr></thead>
+          <tbody id="btb"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- CALCULATOR -->
+      <div class="pg" id="pg-calculator">
+        <div class="pg-title">حاسبة التكاليف</div>
+        <div class="pg-sub">احسب تكاليف الحفلة وصافي الربح</div>
+        <div class="calc-grid">
+          <div>
+            <div class="card">
+              <div class="ct" style="margin-bottom:12px">القاعة والفترة</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+                <div><label style="font-size:11px;font-weight:700;color:var(--text3);display:block;margin-bottom:5px">القاعة</label>
+                  <select id="c-h" onchange="cp()" style="width:100%;padding:9px 10px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;background:var(--bg3);color:var(--text)">
+                    <option value="H1">👑 الملكية ₪6,000</option><option value="H2">🌸 الأميرية ₪5,000</option>
+                  </select></div>
+                <div><label style="font-size:11px;font-weight:700;color:var(--text3);display:block;margin-bottom:5px">الفترة</label>
+                  <select id="c-s" onchange="cp()" style="width:100%;padding:9px 10px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;background:var(--bg3);color:var(--text)">
+                    <option value="S1">🕕 الأولى ٦–٨ م</option><option value="S2">🌙 الثانية ٩–١١ م</option>
+                  </select></div>
+              </div>
+              <div class="extra-row" style="margin-bottom:10px">
+                <label>⏱️ ساعات إضافية</label>
+                <input type="number" id="c-e" value="0" min="0" max="6" oninput="cp()">
+                <span style="font-size:12px;color:var(--text3)">× ₪1,000</span>
+                <span class="extra-cost" id="c-e-cost">₪ 0</span>
+              </div>
+              <div id="c-deco-row" style="display:none">
+                <div class="deco-toggle" id="c-deco-toggle" onclick="toggleCalcDeco()">
+                  <div class="dt-left"><span style="font-size:16px">🌸</span><div><div class="dt-text">إضافة زينة</div><div class="dt-sub">للقاعة الملكية فقط</div></div></div>
+                  <div class="toggle-sw" id="c-deco-sw"></div>
+                </div>
+                <div id="c-deco-price-row" style="display:none;margin-top:10px">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <label style="font-size:12px;font-weight:700;color:var(--text3);white-space:nowrap">تكلفة الزينة ₪</label>
+                    <input type="number" id="c-deco-cost" value="800" oninput="cp()" style="flex:1;padding:8px 10px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;background:var(--bg2);color:var(--text)">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ch"><div class="ct">📦 تكلفة المشتريات</div><button class="btn btn-add btn-xs" onclick="addItem()">+ إضافة</button></div>
+              <div class="items-head"><span>الصنف</span><span>الكمية</span><span>سعر الصندوق ₪</span><span>الإجمالي</span><span></span></div>
+              <div id="items-rows"></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:8px 10px;background:rgba(212,168,67,0.06);border-radius:7px;border:1px solid rgba(212,168,67,0.12)">
+                <span style="font-size:13px;font-weight:700;color:var(--text2)">إجمالي المشتريات</span>
+                <span id="items-total" style="font-size:14px;font-weight:900;color:var(--gold2);font-family:'Cinzel',serif">₪ 0</span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ct" style="margin-bottom:12px">🏢 مصاريف تشغيلية</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div><label style="font-size:11px;font-weight:700;color:var(--text3);display:block;margin-bottom:5px">رواتب ₪</label><input type="number" id="cw" value="800" oninput="cp()" style="width:100%;padding:9px;border:1.5px solid var(--border2);border-radius:7px;font-size:13px;background:var(--bg3);color:var(--text)"></div>
+                <div><label style="font-size:11px;font-weight:700;color:var(--text3);display:block;margin-bottom:5px">كهرباء وماء ₪</label><input type="number" id="cu" value="200" oninput="cp()" style="width:100%;padding:9px;border:1.5px solid var(--border2);border-radius:7px;font-size:13px;background:var(--bg3);color:var(--text)"></div>
+                <div><label style="font-size:11px;font-weight:700;color:var(--text3);display:block;margin-bottom:5px">تنظيف ₪</label><input type="number" id="cc2" value="150" oninput="cp()" style="width:100%;padding:9px;border:1.5px solid var(--border2);border-radius:7px;font-size:13px;background:var(--bg3);color:var(--text)"></div>
+                <div><label style="font-size:11px;font-weight:700;color:var(--text3);display:block;margin-bottom:5px">أخرى ₪</label><input type="number" id="co2" value="100" oninput="cp()" style="width:100%;padding:9px;border:1.5px solid var(--border2);border-radius:7px;font-size:13px;background:var(--bg3);color:var(--text)"></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="result-panel">
+              <div class="rh">ملخص الأرباح</div>
+              <div class="rr"><span class="rl">إيجار القاعة</span><span class="rv" id="pr-hall">—</span></div>
+              <div class="rr"><span class="rl">ساعات إضافية</span><span class="rv" id="pr-extra">—</span></div>
+              <div class="rr" style="border-bottom:2px solid var(--border2)"><span class="rl" style="font-weight:700;color:var(--text2)">إجمالي الإيرادات</span><span class="rv rv-pos" id="pr-rev">—</span></div>
+              <div class="rr"><span class="rl">تكلفة المشتريات</span><span class="rv rv-neg" id="pr-items">—</span></div>
+              <div class="rr"><span class="rl">تكلفة الزينة</span><span class="rv rv-neg" id="pr-deco">—</span></div>
+              <div class="rr"><span class="rl">مصاريف تشغيلية</span><span class="rv rv-neg" id="pr-opex">—</span></div>
+              <div class="rr" style="border-bottom:2px solid var(--border2)"><span class="rl">إجمالي التكاليف</span><span class="rv rv-neg" id="pr-cost">—</span></div>
+              <div class="rr"><span class="rl" style="font-family:'Cinzel',serif;font-size:14px;font-weight:700">صافي الربح</span><span class="rv rv-net" id="pr-net">—</span></div>
+              <div class="rr" style="border:none"><span class="rl">هامش الربح</span><span class="rv rv-net" id="pr-margin">—</span></div>
+            </div>
+            <div class="card" style="margin-top:14px"><div class="ct" style="margin-bottom:12px">مخطط المقارنة</div><canvas id="bc" height="200"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIMESHEET -->
+      <div class="pg" id="pg-timesheet">
+        <div class="pg-title">سجل الدوام</div>
+        <div class="pg-sub">ساعات عمل الموظفين</div>
+        <div class="card">
+          <div class="ch"><div class="ct">جدول الحضور</div><button class="btn btn-g btn-sm" onclick="atr()">+ إضافة</button></div>
+          <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 76px 40px;gap:7px;margin-bottom:10px">
+            <span style="font-size:10px;font-weight:800;color:var(--text4);text-transform:uppercase">الموظف</span>
+            <span style="font-size:10px;font-weight:800;color:var(--text4);text-transform:uppercase">التاريخ</span>
+            <span style="font-size:10px;font-weight:800;color:var(--text4);text-transform:uppercase">حضور</span>
+            <span style="font-size:10px;font-weight:800;color:var(--text4);text-transform:uppercase">انصراف</span>
+            <span style="font-size:10px;font-weight:800;color:var(--text4);text-transform:uppercase">الساعات</span>
+            <span></span>
+          </div>
+          <div id="tsr"></div>
+          <div class="divr"></div>
+          <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center">
+            <div><span style="font-size:10px;font-weight:800;color:var(--text4);text-transform:uppercase;display:block;margin-bottom:4px">إجمالي الساعات</span><span id="tth" style="font-size:22px;font-weight:900;color:var(--gold2);font-family:'Cinzel',serif">0.0</span></div>
+            <div><span style="font-size:10px;font-weight:800;color:var(--text4);text-transform:uppercase;display:block;margin-bottom:5px">الأجر / ساعة</span><div style="display:flex;align-items:center;gap:6px"><input type="number" id="tr" value="18" style="width:60px;padding:7px 8px;border:1.5px solid var(--border2);border-radius:7px;font-size:14px;background:var(--bg3);color:var(--text)" oninput="calcTs()"><span style="font-size:12px;color:var(--text3);font-weight:600">₪</span></div></div>
+            <div><span style="font-size:10px;font-weight:800;color:var(--text4);text-transform:uppercase;display:block;margin-bottom:4px">إجمالي الرواتب</span><span id="ttw" style="font-size:22px;font-weight:900;color:#4EE090;font-family:'Cinzel',serif">₪ 0.00</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORTS -->
+      <div class="pg" id="pg-reports">
+        <div class="pg-title">التقارير</div>
+        <div class="pg-sub">ملخص مالي شامل — Opera Hall</div>
+        <div class="stats">
+          <div class="sc sc-g"><div class="lb">إجمالي الإيرادات</div><div class="vl" id="rp1">₪ 0</div></div>
+          <div class="sc sc-gr"><div class="lb">صافي ربح تقديري</div><div class="vl" id="rp2">₪ 0</div></div>
+          <div class="sc"><div class="lb">إجمالي الحجوزات</div><div class="vl" id="rp3">0</div></div>
+          <div class="sc sc-bl"><div class="lb">متوسط / حفلة</div><div class="vl" id="rp4">₪ 0</div></div>
+        </div>
+        <div class="dash-grid" style="margin-bottom:16px">
+          <div class="card"><div class="ct" style="margin-bottom:12px">توزيع الحجوزات</div><div id="rpst"></div></div>
+          <div class="card"><div class="ct" style="margin-bottom:12px">مقارنة القاعتين</div><canvas id="hc2" height="180"></canvas></div>
+        </div>
+        <div class="card"><div class="ct" style="margin-bottom:14px">ملخص الحجوزات</div>
+          <div class="tbl-wrap"><table><thead><tr><th>العميل</th><th>الهاتف</th><th>القاعة</th><th>التاريخ</th><th>الفترة</th><th>زينة</th><th>إضافي</th><th>المبلغ ₪</th><th>الحالة</th></tr></thead>
+          <tbody id="rtb"></tbody></table></div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MOBILE NAV -->
+  <div class="mobile-nav">
+    <div class="mn-item on" onclick="sp('dashboard',this);mnSwitch(this)"><div class="mn-ic">📊</div>الرئيسية</div>
+    <div class="mn-item" onclick="sp('halls',this);mnSwitch(this)"><div class="mn-ic">🏛️</div>القاعتان</div>
+    <div class="mn-item" onclick="sp('bookings',this);mnSwitch(this)"><div class="mn-ic">📅</div>حجوزات</div>
+    <div class="mn-item" onclick="sp('calculator',this);mnSwitch(this)"><div class="mn-ic">💰</div>حاسبة</div>
+    <div class="mn-item" onclick="sp('reports',this);mnSwitch(this)"><div class="mn-ic">📈</div>تقارير</div>
+  </div>
+</div>
+
+<!-- BOOKING MODAL -->
+<div class="mo" id="mo-bk">
+  <div class="modal">
+    <div class="modal-title">📅 حجز جديد — Opera Hall</div>
+    <div class="conflict-box" id="conflict-box">
+      <div class="cb-title">⚠️ تنبيه تضارب في المواعيد</div>
+      <div id="conflict-body"></div>
+    </div>
+    <div class="form-sec">
+      <div class="form-sec-title">👤 بيانات العميل</div>
+      <div class="fg2">
+        <div class="fld-s"><label>الاسم الكامل *</label><input type="text" id="bk-name" placeholder="اسم العميل"/></div>
+        <div class="fld-s"><label>رقم الهاتف *</label><input type="text" id="bk-phone" placeholder="05x-xxx-xxxx"/></div>
+        <div class="fld-s"><label>البريد الإلكتروني</label><input type="email" id="bk-email" placeholder="email@example.com"/></div>
+        <div class="fld-s"><label>رقم الهوية</label><input type="text" id="bk-id" placeholder="رقم الهوية"/></div>
+        <div class="fld-s full"><label>ملاحظات</label><textarea id="bk-notes" placeholder="أي طلبات خاصة..."></textarea></div>
+      </div>
+    </div>
+    <div class="form-sec">
+      <div class="form-sec-title">🏛️ القاعة وحالة الحجز</div>
+      <div class="fg2">
+        <div class="fld-s"><label>القاعة *</label>
+          <select id="bk-hall" onchange="onBkChange()">
+            <option value="H1">👑 القاعة الملكية</option>
+            <option value="H2">🌸 القاعة الأميرية</option>
+          </select></div>
+        <div class="fld-s"><label>حالة الحجز</label>
+          <select id="bk-status"><option>مؤكد</option><option>قيد الانتظار</option><option>ملغى</option></select></div>
+      </div>
+    </div>
+    <div class="form-sec">
+      <div class="form-sec-title">📅 اختر تاريخ الحفلة</div>
+      <div class="cal-wrapper">
+        <div class="cal-header">
+          <div class="cal-nav">
+            <button onclick="calPrev()">&#8250;</button>
+            <span class="cal-month" id="cal-month-label">—</span>
+            <button onclick="calNext()">&#8249;</button>
+          </div>
+          <select id="cal-year-sel" class="cal-year-sel" onchange="calGoYear()"></select>
+        </div>
+        <div class="cal-days-head">
+          <span>أح</span><span>إث</span><span>ثل</span><span>أر</span><span>خم</span><span>جم</span><span>سب</span>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-selected-display" id="cal-selected-display">
+          <span style="color:var(--text4)">لم يتم اختيار تاريخ بعد</span>
+        </div>
+        <div class="cal-legend">
+          <div class="cal-leg-item"><div class="dot dot-h1" style="width:8px;height:8px;border-radius:50%"></div><span>الملكية محجوزة</span></div>
+          <div class="cal-leg-item"><div class="dot dot-h2" style="width:8px;height:8px;border-radius:50%"></div><span>الأميرية محجوزة</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="form-sec">
+      <div class="form-sec-title">🕐 الفترة الزمنية</div>
+      <div class="slot-cards">
+        <div class="slot-card selected" id="sc1" onclick="selSlot('S1')">
+          <input type="radio" name="bk-slot" value="S1" checked>
+          <div class="sc-name">🕕 الفترة الأولى</div>
+          <div class="sc-time">٦:٠٠ م — ٨:٠٠ م</div>
+          <div class="sc-price" id="sc1-p">₪ 6,000</div>
+          <div class="sc-taken" id="sc1-taken" style="display:none">⛔ محجوزة</div>
+        </div>
+        <div class="slot-card" id="sc2" onclick="selSlot('S2')">
+          <input type="radio" name="bk-slot" value="S2">
+          <div class="sc-name">🌙 الفترة الثانية</div>
+          <div class="sc-time">٩:٠٠ م — ١١:٠٠ م</div>
+          <div class="sc-price" id="sc2-p">₪ 6,000</div>
+          <div class="sc-taken" id="sc2-taken" style="display:none">⛔ محجوزة</div>
+        </div>
+      </div>
+      <div class="extra-row">
+        <label>⏱️ ساعات إضافية</label>
+        <input type="number" id="bk-extra" value="0" min="0" max="6" oninput="calcBkPrice()">
+        <span style="font-size:12px;color:var(--text3)">× ₪1,000 / ساعة</span>
+        <span class="extra-cost" id="bk-extra-cost">₪ 0</span>
+      </div>
+    </div>
+    <div class="form-sec">
+      <div class="form-sec-title">✅ ما يشمله السعر</div>
+      <div class="includes-box" id="includes-box"></div>
+      <div id="deco-option" style="display:none">
+        <div class="deco-toggle" id="deco-toggle-btn" onclick="toggleDeco()">
+          <div class="dt-left"><span style="font-size:18px">🌸</span>
+            <div><div class="dt-text">إضافة زينة من القاعة</div><div class="dt-sub">للقاعة الملكية — سعر إضافي</div></div></div>
+          <div class="toggle-sw" id="deco-sw"></div>
+        </div>
+        <div id="deco-price-row" style="display:none;margin-top:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <label style="font-size:12px;font-weight:700;color:var(--text3);white-space:nowrap">سعر الزينة ₪</label>
+            <input type="number" id="bk-deco-price" value="800" oninput="calcBkPrice()" style="flex:1;padding:8px 10px;border:1.5px solid var(--border2);border-radius:8px;font-size:14px;background:var(--bg2);color:var(--text)">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="price-summary">
+      <div style="font-size:10px;color:var(--text4);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-weight:700">ملخص السعر</div>
+      <div class="ps-row"><span class="ps-lbl">إيجار القاعة</span><span class="ps-val" id="bk-pr-hall">₪ 0</span></div>
+      <div class="ps-row"><span class="ps-lbl">ساعات إضافية</span><span class="ps-val" id="bk-pr-extra">—</span></div>
+      <div class="ps-row" id="bk-pr-deco-row" style="display:none"><span class="ps-lbl">الزينة</span><span class="ps-val ps-neg" id="bk-pr-deco">—</span></div>
+      <div class="ps-row" style="border:none"><span class="ps-lbl" style="font-family:'Cinzel',serif;font-size:15px;font-weight:700">الإجمالي</span><span class="ps-total" id="bk-pr-total">₪ 0</span></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-g" id="save-btn" onclick="saveBk()">💾 حفظ الحجز</button>
+      <button class="btn btn-line" onclick="cm()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const USERS={admin:{pass:'1234',role:'مدير'},manager:{pass:'5678',role:'مشرف'},staff:{pass:'9999',role:'موظف'}};
+const PRICES={H1:6000,H2:5000};
+const EXTRA_RATE=1000;
+const INCLUDES={H1:['🥤 مشروبات','🎂 كيك'],H2:['🥤 مشروبات','🎂 كيك','🌸 زينة']};
+const HALL_NAMES={H1:'👑 القاعة الملكية',H2:'🌸 القاعة الأميرية'};
+const SLOT_L={S1:'الفترة الأولى (٦–٨ م)',S2:'الفترة الثانية (٩–١١ م)'};
+const MONTHS_AR=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+let bookings=[
+  {name:'ريم أبو عيسى',phone:'059-111-2233',email:'',idno:'',hall:'H1',date:'2025-08-20',slot:'S1',deco:false,decoPrice:0,extraH:0,price:6000,status:'مؤكد',notes:''},
+  {name:'سمر الخالدي',phone:'057-444-5566',email:'',idno:'',hall:'H1',date:'2025-09-15',slot:'S2',deco:true,decoPrice:800,extraH:1,price:7800,status:'مؤكد',notes:''},
+  {name:'نور البرغوثي',phone:'059-888-9900',email:'',idno:'',hall:'H2',date:'2025-10-10',slot:'S1',deco:false,decoPrice:0,extraH:0,price:5000,status:'قيد الانتظار',notes:''},
+  {name:'هدى عبد الرحمن',phone:'057-222-3344',email:'',idno:'',hall:'H2',date:'2025-11-05',slot:'S2',deco:false,decoPrice:0,extraH:2,price:7000,status:'مؤكد',notes:''},
+];
+let tsRows=[];
+let actLog=[
+  {txt:'تأكيد حجز ريم أبو عيسى — القاعة الملكية',tm:'منذ ساعتين'},
+  {txt:'حجز جديد: هدى عبد الرحمن مع ساعتين إضافيتين',tm:'منذ 5 ساعات'},
+  {txt:'تحديث حجز سمر الخالدي — أضافت زينة',tm:'أمس'},
+];
+let calcItems=[{name:'صناديق عصير',qty:10,up:55},{name:'صناديق مشروبات غازية',qty:8,up:65},{name:'قوالب كيك',qty:3,up:120}];
+let bkDecoOn=false,currentSlot='S1',selectedDate=null,calYear,calMonth;
+let calcDecoOn=false;
+function ils(n){return'₪ '+Number(n).toLocaleString();}
+function sbadge(s){const m={'مؤكد':'bg-conf','قيد الانتظار':'bg-pend','ملغى':'bg-canc'};return'<span class="badge '+( m[s]||'bg-pend')+'">'+s+'</span>';}
+function slotB(s){return'<span class="slot-badge">'+(SLOT_L[s]||s)+'</span>';}
+function toDMY(iso){if(!iso)return'—';const m=iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?m[3]+'/'+m[2]+'/'+m[1]:iso;}
+function toISO(y,m,d){return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
+function selRole(el){document.querySelectorAll('.rtab').forEach(function(b){b.classList.remove('on')});el.classList.add('on')}
+function mnSwitch(el){document.querySelectorAll('.mn-item').forEach(function(b){b.classList.remove('on')});el.classList.add('on')}
+function login(){
+  var u=document.getElementById('un').value.trim().toLowerCase();
+  var p=document.getElementById('up').value;
+  if(USERS[u]&&USERS[u].pass===p){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('main-app').style.display='flex';
+    document.getElementById('tu').textContent=u+' · '+USERS[u].role;
+    document.getElementById('dg').textContent='أهلاً '+u+'، هذه نظرة عامة على Opera Hall';
+    refreshAll();initCalcItems();cp();initTs();
+  }else{document.getElementById('lerr').style.display='block';}
+}
+function logout(){document.getElementById('main-app').style.display='none';document.getElementById('login-screen').style.display='flex';}
+function sp(id,el){
+  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on')});
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on')});
+  document.getElementById('pg-'+id).classList.add('on');el.classList.add('on');
+  if(id==='reports')buildReports();
+  if(id==='halls')buildHalls();
+}
+function initCal(){
+  var now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();
+  var sel=document.getElementById('cal-year-sel');sel.innerHTML='';
+  for(var y=now.getFullYear();y<=now.getFullYear()+3;y++){var o=document.createElement('option');o.value=y;o.textContent=y;if(y===calYear)o.selected=true;sel.appendChild(o);}
+  renderCal();
+}
+function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;document.getElementById('cal-year-sel').value=calYear;}renderCal();}
+function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;document.getElementById('cal-year-sel').value=calYear;}renderCal();}
+function calGoYear(){calYear=parseInt(document.getElementById('cal-year-sel').value);renderCal();}
+function renderCal(){
+  document.getElementById('cal-month-label').textContent=MONTHS_AR[calMonth]+' '+calYear;
+  var hKey=document.getElementById('bk-hall').value;
+  var firstDay=new Date(calYear,calMonth,1).getDay();
+  var daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  var today=new Date();today.setHours(0,0,0,0);
+  var grid=document.getElementById('cal-grid');grid.innerHTML='';
+  for(var i=0;i<firstDay;i++){var em=document.createElement('div');em.className='cal-day cal-empty';grid.appendChild(em);}
+  for(var d=1;d<=daysInMonth;d++){
+    var iso=toISO(calYear,calMonth+1,d);
+    var cellDate=new Date(calYear,calMonth,d);cellDate.setHours(0,0,0,0);
+    var isPast=cellDate<today;
+    var isToday=cellDate.getTime()===today.getTime();
+    var isSelected=selectedDate===iso;
+    var dayBks=bookings.filter(function(b){return b.date===iso&&b.status!=='ملغى';});
+    var h1Bks=dayBks.filter(function(b){return b.hall==='H1';});
+    var h2Bks=dayBks.filter(function(b){return b.hall==='H2';});
+    var cls='cal-day';
+    if(isPast)cls+=' cal-past';
+    if(isToday)cls+=' cal-today';
+    if(isSelected)cls+=' cal-selected';
+    var el=document.createElement('div');el.className=cls;
+    if(!isPast){(function(isoD){el.onclick=function(){pickDate(isoD,document.getElementById('bk-hall').value);};})(iso);}
+    var dn=document.createElement('div');dn.className='day-num';dn.textContent=d;el.appendChild(dn);
+    if(dayBks.length>0){
+      var dd=document.createElement('div');dd.className='day-dots';
+      h1Bks.forEach(function(){var dot=document.createElement('div');dot.className='dot dot-h1';dd.appendChild(dot);});
+      h2Bks.forEach(function(){var dot=document.createElement('div');dot.className='dot dot-h2';dd.appendChild(dot);});
+      el.appendChild(dd);
+    }
+    grid.appendChild(el);
+  }
+}
+function pickDate(iso,hKey){
+  selectedDate=iso;
+  var dmy=toDMY(iso);
+  var dayBks=bookings.filter(function(b){return b.hall===hKey&&b.date===iso&&b.status!=='ملغى';});
+  var dispText='📅 '+dmy;
+  if(dayBks.length>0){var taken=dayBks.map(function(b){return SLOT_L[b.slot];}).join(' ، ');dispText+=' &nbsp;·&nbsp; <span style="color:#ff8080;font-size:12px">محجوز: '+taken+'</span>';}
+  else{dispText+=' &nbsp;·&nbsp; <span style="color:#4EE090;font-size:12px">متاح بالكامل</span>';}
+  document.getElementById('cal-selected-display').innerHTML=dispText;
+  renderCal();
+  checkConflictUI(hKey,iso);
+}
+function checkConflicts(hall,date,slot){return bookings.filter(function(b){return b.hall===hall&&b.date===date&&b.slot===slot&&b.status!=='ملغى';});}
+function checkConflictUI(hKey,date){
+  var s1=checkConflicts(hKey,date,'S1'),s2=checkConflicts(hKey,date,'S2');
+  var s1Taken=s1.length>0,s2Taken=s2.length>0;
+  var price=PRICES[hKey];
+  document.getElementById('sc1-p').textContent=ils(price);
+  document.getElementById('sc2-p').textContent=ils(price);
+  document.getElementById('sc1').classList.toggle('taken',s1Taken);
+  document.getElementById('sc2').classList.toggle('taken',s2Taken);
+  document.getElementById('sc1-taken').style.display=s1Taken?'block':'none';
+  document.getElementById('sc2-taken').style.display=s2Taken?'block':'none';
+  var conflictBox=document.getElementById('conflict-box');
+  var saveBtn=document.getElementById('save-btn');
+  if(s1Taken||s2Taken){
+    var allOnDate=bookings.filter(function(b){return b.hall===hKey&&b.date===date&&b.status!=='ملغى';});
+    var html='<div style="font-size:13px;color:var(--text2);margin-bottom:8px">يوجد حجز في <b style="color:var(--gold2)">'+toDMY(date)+'</b> لـ <b style="color:var(--gold2)">'+HALL_NAMES[hKey]+'</b>:</div>';
+    allOnDate.forEach(function(b){html+='<div class="cb-item"><span>'+(b.slot==='S1'?'🕕':'🌙')+'</span><div><b style="color:var(--text)">'+b.name+'</b> — '+SLOT_L[b.slot]+'</div>'+sbadge(b.status)+'</div>';});
+    var free=[];if(!s1Taken)free.push('S1');if(!s2Taken)free.push('S2');
+    if(free.length>0){html+='<div class="avail-box"><div class="av-title">✅ الفترات المتاحة</div>'+free.map(function(s){return'<span class="avail-slot">'+(s==='S1'?'🕕':'🌙')+' '+SLOT_L[s]+'</span>';}).join('')+'</div>';}
+    else{html+='<div style="margin-top:8px;padding:10px;background:rgba(231,76,60,0.07);border-radius:7px;font-size:13px;color:#ff8080;font-weight:700">⛔ القاعة محجوزة بالكامل في هذا اليوم</div>';saveBtn.disabled=true;}
+    document.getElementById('conflict-body').innerHTML=html;
+    conflictBox.style.display='block';
+  } else {
+    conflictBox.style.display='none';
+    saveBtn.disabled=false;
+  }
+  if(currentSlot==='S1'&&s1Taken&&!s2Taken)selSlot('S2');
+  else if(currentSlot==='S2'&&s2Taken&&!s1Taken)selSlot('S1');
+  calcBkPrice();
+}
+function onBkChange(){
+  var hKey=document.getElementById('bk-hall').value;
+  var price=PRICES[hKey];
+  document.getElementById('sc1-p').textContent=ils(price);
+  document.getElementById('sc2-p').textContent=ils(price);
+  var inc=INCLUDES[hKey];
+  document.getElementById('includes-box').innerHTML='<div class="ib-title">مشمول في السعر</div><div class="includes-list">'+inc.map(function(i){return'<span class="inc-item">'+i+'</span>';}).join('')+'</div>';
+  var decoOpt=document.getElementById('deco-option');
+  if(hKey==='H1'){decoOpt.style.display='block';}
+  else{decoOpt.style.display='none';bkDecoOn=false;document.getElementById('deco-sw').classList.remove('on');document.getElementById('deco-toggle-btn').classList.remove('active');document.getElementById('deco-price-row').style.display='none';}
+  renderCal();
+  if(selectedDate)checkConflictUI(hKey,selectedDate);
+  calcBkPrice();
+}
+function selSlot(s){
+  if(!selectedDate)return;
+  var hKey=document.getElementById('bk-hall').value;
+  var conflicts=checkConflicts(hKey,selectedDate,s);
+  if(conflicts.length>0)return;
+  currentSlot=s;
+  document.getElementById('sc1').classList.toggle('selected',s==='S1');
+  document.getElementById('sc2').classList.toggle('selected',s==='S2');
+  document.querySelector('input[value="'+s+'"]').checked=true;
+  document.getElementById('save-btn').disabled=false;
+  calcBkPrice();
+}
+function toggleDeco(){
+  bkDecoOn=!bkDecoOn;
+  document.getElementById('deco-sw').classList.toggle('on',bkDecoOn);
+  document.getElementById('deco-toggle-btn').classList.toggle('active',bkDecoOn);
+  document.getElementById('deco-price-row').style.display=bkDecoOn?'block':'none';
+  calcBkPrice();
+}
+function toggleCalcDeco(){
+  calcDecoOn=!calcDecoOn;
+  document.getElementById('c-deco-sw').classList.toggle('on',calcDecoOn);
+  document.getElementById('c-deco-toggle').classList.toggle('active',calcDecoOn);
+  document.getElementById('c-deco-price-row').style.display=calcDecoOn?'block':'none';
+  cp();
+}
+function calcBkPrice(){
+  var hKey=document.getElementById('bk-hall').value;
+  var base=PRICES[hKey];
+  var extra=(parseInt(document.getElementById('bk-extra').value)||0)*EXTRA_RATE;
+  var deco=bkDecoOn?(parseInt(document.getElementById('bk-deco-price').value)||0):0;
+  var total=base+extra+deco;
+  document.getElementById('bk-extra-cost').textContent=extra>0?ils(extra):'₪ 0';
+  document.getElementById('bk-pr-hall').textContent=ils(base);
+  document.getElementById('bk-pr-extra').textContent=extra>0?ils(extra):'—';
+  document.getElementById('bk-pr-deco-row').style.display=bkDecoOn?'flex':'none';
+  document.getElementById('bk-pr-deco').textContent=deco>0?ils(deco):'—';
+  document.getElementById('bk-pr-total').textContent=ils(total);
+}
+function om(){
+  ['bk-name','bk-phone','bk-email','bk-id','bk-notes'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('bk-extra').value='0';
+  document.getElementById('bk-deco-price').value='800';
+  document.getElementById('bk-hall').value='H1';
+  document.getElementById('bk-status').value='مؤكد';
+  document.querySelectorAll('input[name="bk-slot"]')[0].checked=true;
+  currentSlot='S1';bkDecoOn=false;selectedDate=null;
+  document.getElementById('sc1').classList.add('selected');document.getElementById('sc2').classList.remove('selected');
+  document.getElementById('sc1').classList.remove('taken');document.getElementById('sc2').classList.remove('taken');
+  document.getElementById('sc1-taken').style.display='none';document.getElementById('sc2-taken').style.display='none';
+  document.getElementById('conflict-box').style.display='none';
+  document.getElementById('save-btn').disabled=false;
+  document.getElementById('cal-selected-display').innerHTML='<span style="color:var(--text4)">لم يتم اختيار تاريخ بعد</span>';
+  onBkChange();initCal();
+  document.getElementById('mo-bk').classList.add('open');
+}
+function cm(){document.getElementById('mo-bk').classList.remove('open');}
+function saveBk(){
+  var name=document.getElementById('bk-name').value.trim();
+  var phone=document.getElementById('bk-phone').value.trim();
+  if(!name){alert('الرجاء إدخال اسم العميل');return;}
+  if(!phone){alert('الرجاء إدخال رقم الهاتف');return;}
+  if(!selectedDate){alert('الرجاء اختيار تاريخ الحفلة من التقويم');return;}
+  var hKey=document.getElementById('bk-hall').value;
+  var conflicts=checkConflicts(hKey,selectedDate,currentSlot);
+  if(conflicts.length>0){alert('⛔ لا يمكن الحجز!\n'+toDMY(selectedDate)+' — '+SLOT_L[currentSlot]+'\nمحجوز مسبقاً من: '+conflicts[0].name);return;}
+  var extraH=parseInt(document.getElementById('bk-extra').value)||0;
+  var decoPrice=bkDecoOn?(parseInt(document.getElementById('bk-deco-price').value)||0):0;
+  var price=PRICES[hKey]+extraH*EXTRA_RATE+decoPrice;
+  bookings.unshift({name:name,phone:phone,email:document.getElementById('bk-email').value,idno:document.getElementById('bk-id').value,
+    hall:hKey,date:selectedDate,slot:currentSlot,deco:bkDecoOn,decoPrice:decoPrice,extraH:extraH,price:price,
+    status:document.getElementById('bk-status').value,notes:document.getElementById('bk-notes').value});
+  actLog.unshift({txt:'حجز جديد: '+name+' — '+HALL_NAMES[hKey]+' — '+SLOT_L[currentSlot],tm:'الآن'});
+  cm();refreshAll();
+}
+function delBk(i){if(confirm('حذف حجز "'+bookings[i].name+'"؟')){bookings.splice(i,1);refreshAll();}}
+function refreshAll(){
+  document.getElementById('s1').textContent=bookings.length;
+  document.getElementById('s3').textContent=bookings.length;
+  document.getElementById('s4').textContent=bookings.filter(function(b){return b.status==='قيد الانتظار';}).length;
+  var rev=bookings.filter(function(b){return b.status==='مؤكد';}).reduce(function(a,b){return a+b.price;},0);
+  document.getElementById('s2').textContent=ils(rev);
+  document.getElementById('dbl').innerHTML=bookings.slice(0,5).map(function(b){return '<div class="ai"><div class="adot"></div><div><div class="atxt"><b style="color:var(--gold2)">'+b.name+'</b> — '+HALL_NAMES[b.hall]+'</div><div class="atm">'+toDMY(b.date)+' · '+slotB(b.slot)+' · '+sbadge(b.status)+' · <span class="tag-sm">'+ils(b.price)+'</span></div></div></div>';}).join('');
+  document.getElementById('dal').innerHTML=actLog.slice(0,6).map(function(a){return '<div class="ai"><div class="adot"></div><div><div class="atxt">'+a.txt+'</div><div class="atm">'+a.tm+'</div></div></div>';}).join('');
+  document.getElementById('btb').innerHTML=bookings.map(function(b,i){return '<tr><td><span class="tag-id">#'+String(i+1).padStart(3,'0')+'</span></td><td><b style="color:var(--text)">'+b.name+'</b></td><td style="color:var(--text3)">'+b.phone+'</td><td>'+HALL_NAMES[b.hall]+'</td><td style="font-weight:600;color:var(--text2)">'+toDMY(b.date)+'</td><td>'+slotB(b.slot)+'</td><td>'+(b.deco?'<span style="color:#D4A8E8;font-weight:700">✅</span>':'—')+'</td><td>'+(b.extraH>0?'<span style="color:#6AB8F0;font-weight:700">+'+b.extraH+' س</span>':'—')+'</td><td><b style="color:var(--gold2)">'+ils(b.price)+'</b></td><td>'+sbadge(b.status)+'</td><td><button class="btn btn-del btn-xs" onclick="delBk('+i+')">حذف</button></td></tr>';}).join('');
+}
+function buildHalls(){
+  var h1b=bookings.filter(function(b){return b.hall==='H1';}),h2b=bookings.filter(function(b){return b.hall==='H2';});
+  document.getElementById('h1c').textContent=h1b.filter(function(b){return b.status==='مؤكد';}).length;
+  document.getElementById('h2c').textContent=h2b.filter(function(b){return b.status==='مؤكد';}).length;
+  document.getElementById('h1r').textContent=ils(h1b.filter(function(b){return b.status==='مؤكد';}).reduce(function(a,b){return a+b.price;},0));
+  document.getElementById('h2r').textContent=ils(h2b.filter(function(b){return b.status==='مؤكد';}).reduce(function(a,b){return a+b.price;},0));
+  document.getElementById('htb').innerHTML=bookings.map(function(b){return '<tr><td><b style="color:var(--text)">'+b.name+'</b></td><td style="color:var(--text3)">'+b.phone+'</td><td>'+HALL_NAMES[b.hall]+'</td><td style="font-weight:600;color:var(--text2)">'+toDMY(b.date)+'</td><td>'+slotB(b.slot)+'</td><td>'+(b.deco?'<span style="color:#D4A8E8;font-weight:700">✅</span>':'—')+'</td><td>'+(b.extraH>0?'<span style="color:#6AB8F0;font-weight:700">+'+b.extraH+' س</span>':'—')+'</td><td><b style="color:var(--gold2)">'+ils(b.price)+'</b></td><td>'+sbadge(b.status)+'</td></tr>';}).join('');
+}
+function initCalcItems(){renderItems();}
+var PRESETS=['صناديق عصير','صناديق مشروبات غازية','قوالب كيك','صناديق مياه','صناديق شاي','أخرى'];
+function addItem(){calcItems.push({name:'صناديق عصير',qty:1,up:0});renderItems();cp();}
+function delItem(i){calcItems.splice(i,1);renderItems();cp();}
+function renderItems(){
+  document.getElementById('items-rows').innerHTML=calcItems.map(function(item,i){return '<div class="item-row"><select onchange="calcItems['+i+'].name=this.value;cp()">'+PRESETS.map(function(n){return'<option value="'+n+'"'+(item.name===n?' selected':'')+'>'+n+'</option>';}).join('')+'</select><input type="number" value="'+item.qty+'" min="0" oninput="calcItems['+i+'].qty=parseFloat(this.value)||0;cp()"><input type="number" value="'+item.up+'" min="0" oninput="calcItems['+i+'].up=parseFloat(this.value)||0;cp()"><div class="item-total" id="it'+i+'">'+ils(item.qty*item.up)+'</div><button class="btn btn-del btn-xs" onclick="delItem('+i+')">✕</button></div>';}).join('');
+}
+function cp(){
+  var hKey=document.getElementById('c-h').value,hallRent=PRICES[hKey];
+  var extra=(parseInt(document.getElementById('c-e').value)||0)*EXTRA_RATE;
+  document.getElementById('c-e-cost').textContent=extra>0?ils(extra):'₪ 0';
+  var cdr=document.getElementById('c-deco-row');
+  if(hKey==='H1'){cdr.style.display='block';}
+  else{cdr.style.display='none';calcDecoOn=false;document.getElementById('c-deco-sw').classList.remove('on');document.getElementById('c-deco-toggle').classList.remove('active');document.getElementById('c-deco-price-row').style.display='none';}
+  var decoC=calcDecoOn?(parseInt(document.getElementById('c-deco-cost').value)||0):0;
+  var totalRev=hallRent+extra,itemsCost=0;
+  calcItems.forEach(function(item,i){var t=item.qty*item.up;itemsCost+=t;var el=document.getElementById('it'+i);if(el)el.textContent=ils(t);});
+  document.getElementById('items-total').textContent=ils(itemsCost);
+  var opex=(parseFloat(document.getElementById('cw').value)||0)+(parseFloat(document.getElementById('cu').value)||0)+(parseFloat(document.getElementById('cc2').value)||0)+(parseFloat(document.getElementById('co2').value)||0);
+  var totalCost=itemsCost+decoC+opex,net=totalRev-totalCost,margin=totalRev?((net/totalRev)*100).toFixed(1):0;
+  var fmt=function(v){return'₪ '+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});};
+  document.getElementById('pr-hall').textContent=fmt(hallRent);
+  document.getElementById('pr-extra').textContent=extra>0?fmt(extra):'—';
+  document.getElementById('pr-items').textContent='−'+fmt(itemsCost);
+  document.getElementById('pr-deco').textContent=decoC>0?'−'+fmt(decoC):'—';
+  document.getElementById('pr-opex').textContent='−'+fmt(opex);
+  document.getElementById('pr-rev').textContent=fmt(totalRev);
+  document.getElementById('pr-cost').textContent='−'+fmt(totalCost);
+  document.getElementById('pr-net').textContent=fmt(net);
+  document.getElementById('pr-margin').textContent=margin+'%';
+  drawBar(totalRev,itemsCost,decoC,opex,net);
+}
+var bChart=null;
+function drawBar(rev,items,deco,opex,net){
+  if(typeof Chart==='undefined')return;
+  var ctx=document.getElementById('bc').getContext('2d');
+  if(bChart)bChart.destroy();
+  bChart=new Chart(ctx,{type:'bar',data:{labels:['الإيرادات','المشتريات','الزينة','المصاريف','صافي الربح'],datasets:[{data:[rev,items,deco,opex,net],backgroundColor:['rgba(212,168,67,0.85)','rgba(231,76,60,0.7)','rgba(200,160,210,0.7)','rgba(52,152,219,0.6)','rgba(46,204,113,0.8)'],borderRadius:7,borderSkipped:false,borderWidth:0}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#6A6040',font:{family:'Tajawal',size:11,weight:'700'}},grid:{color:'rgba(255,255,255,0.03)'}},y:{ticks:{color:'#6A6040',font:{family:'Tajawal',size:10},callback:function(v){return'₪'+v.toLocaleString();}},grid:{color:'rgba(255,255,255,0.03)'}}}}});
+}
+function initTs(){
+  tsRows=[{n:'أحمد سالم',d:'2025-06-15',i:'18:00',o:'23:00'},{n:'نور محمود',d:'2025-06-15',i:'21:00',o:'02:00'},{n:'هناء رمضان',d:'2025-06-16',i:'18:00',o:'22:30'}];
+  renderTs();
+}
+function atr(){tsRows.push({n:'',d:'',i:'',o:''});renderTs();}
+function dtr(i){tsRows.splice(i,1);renderTs();}
+function renderTs(){
+  document.getElementById('tsr').innerHTML=tsRows.map(function(r,i){return '<div class="tsg"><input value="'+r.n+'" placeholder="اسم الموظف" oninput="tsRows['+i+'].n=this.value"/><input type="date" value="'+r.d+'" oninput="tsRows['+i+'].d=this.value;calcTs()"/><input type="time" value="'+r.i+'" oninput="tsRows['+i+'].i=this.value;calcTs()"/><input type="time" value="'+r.o+'" oninput="tsRows['+i+'].o=this.value;calcTs()"/><div class="tsh" id="th'+i+'">—</div><button class="btn btn-del btn-xs" onclick="dtr('+i+')">✕</button></div>';}).join('');
+  calcTs();
+}
+function calcTs(){
+  var tot=0;
+  tsRows.forEach(function(r,i){var el=document.getElementById('th'+i);if(!el)return;
+    if(r.i&&r.o){var ih=parseInt(r.i.split(':')[0]),im=parseInt(r.i.split(':')[1]),oh=parseInt(r.o.split(':')[0]),om=parseInt(r.o.split(':')[1]);var h=(oh*60+om)-(ih*60+im);if(h<0)h+=1440;var hrs=(h/60).toFixed(1);el.textContent=hrs+' س';tot+=parseFloat(hrs);}else el.textContent='—';});
+  var rate=parseFloat(document.getElementById('tr').value)||0;
+  document.getElementById('tth').textContent=tot.toFixed(1);
+  document.getElementById('ttw').textContent='₪ '+(tot*rate).toFixed(2);
+}
+var hChart=null;
+function buildReports(){
+  var conf=bookings.filter(function(b){return b.status==='مؤكد';}),pend=bookings.filter(function(b){return b.status==='قيد الانتظار';}),canc=bookings.filter(function(b){return b.status==='ملغى';});
+  var rev=conf.reduce(function(a,b){return a+b.price;},0),net=Math.round(rev*0.38);
+  document.getElementById('rp1').textContent=ils(rev);document.getElementById('rp2').textContent=ils(net);
+  document.getElementById('rp3').textContent=bookings.length;
+  document.getElementById('rp4').textContent=bookings.length?ils(Math.round(rev/bookings.length)):'₪ 0';
+  document.getElementById('rpst').innerHTML='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"><div class="sc sc-gr"><div class="lb">مؤكد</div><div class="vl">'+conf.length+'</div></div><div class="sc sc-g"><div class="lb">انتظار</div><div class="vl">'+pend.length+'</div></div><div class="sc"><div class="lb">ملغى</div><div class="vl">'+canc.length+'</div></div></div>';
+  var h1r=bookings.filter(function(b){return b.hall==='H1'&&b.status==='مؤكد';}).reduce(function(a,b){return a+b.price;},0);
+  var h2r=bookings.filter(function(b){return b.hall==='H2'&&b.status==='مؤكد';}).reduce(function(a,b){return a+b.price;},0);
+  var ctx=document.getElementById('hc2').getContext('2d');
+  if(hChart)hChart.destroy();
+  hChart=new Chart(ctx,{type:'bar',data:{labels:['الملكية 👑','الأميرية 🌸'],datasets:[{data:[h1r,h2r],backgroundColor:['rgba(212,168,67,0.82)','rgba(200,160,210,0.72)'],borderRadius:9,borderSkipped:false,borderWidth:0}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#6A6040',font:{family:'Tajawal',size:13,weight:'700'}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#6A6040',font:{family:'Tajawal',size:11},callback:function(v){return'₪'+v.toLocaleString();}},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+  document.getElementById('rtb').innerHTML=bookings.map(function(b){return '<tr><td><b style="color:var(--text)">'+b.name+'</b></td><td style="color:var(--text3)">'+b.phone+'</td><td>'+HALL_NAMES[b.hall]+'</td><td style="font-weight:600;color:var(--text2)">'+toDMY(b.date)+'</td><td>'+slotB(b.slot)+'</td><td>'+(b.deco?'<span style="color:#D4A8E8;font-weight:700">✅</span>':'—')+'</td><td>'+(b.extraH>0?'<span style="color:#6AB8F0;font-weight:700">+'+b.extraH+' س</span>':'—')+'</td><td><b style="color:var(--gold2)">'+ils(b.price)+'</b></td><td>'+sbadge(b.status)+'</td></tr>';}).join('');
+}
+window.addEventListener('click',function(e){if(e.target===document.getElementById('mo-bk'))cm();});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" onload="if(typeof cp==='function')cp()"></script>
+</body>
+</html>
